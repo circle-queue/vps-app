@@ -33,7 +33,7 @@ Create a policy requiring MFA which grants access to all ec2 actions. We will us
 
 Let's [setup a MFA device](https://us-east-1.console.aws.amazon.com/iam/home?region=eu-north-1#/users/details/Me/mfa) with `Device name: MyPhone` -> `Authenticator app` -> `Next` -> Finalize setup, then click `Add MFA`.
 
-Returning to your [Security credentials page](https://us-east-1.console.aws.amazon.com/iam/home?region=eu-north-1#/users/details/Me?section=security_credentials), we copy the MFA arn to `%USERPROFILE%\.aws\config`:
+Returning to your [Security credentials page](https://us-east-1.console.aws.amazon.com/iam/home?region=eu-north-1#/users/details/Me?section=security_credentials), we copy the MFA arn to `~\.aws\config`:
 ```
 [profile default]
 region = eu-north-1
