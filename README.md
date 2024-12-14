@@ -47,7 +47,7 @@ aws_secret_access_key = dj...
 ```
 
 ### Create EC2 instance
-Go and [create an ec2 instance)[https://eu-north-1.console.aws.amazon.com/ec2/home?region=eu-north-1#LaunchInstances:]. The defaults are fine, but you should remember to add a `Key pair (login)` and allow `HTTPS` and `HTTP` traffic from the internet. You may also want to increase your Root volume to e.g. `30 GiB`, which is included in the free tier
+Go and (create an ec2 instance)[https://eu-north-1.console.aws.amazon.com/ec2/home?region=eu-north-1#LaunchInstances:]. The defaults are fine, but you should remember to add a `Key pair (login)` and allow `HTTPS` and `HTTP` traffic from the internet. You may also want to increase your Root volume to e.g. `30 GiB`, which is included in the free tier
 
 ## Local setup
 Goal: Be able to SSH into the EC2 instance.
