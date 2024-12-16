@@ -86,9 +86,7 @@ exit
 [ec2-user@ip-... ~]$ logout
 Connection to 13.60.252.89 closed.
 ```
-We can add an alias `ec2` to our `.bashrc` using the following command: `echo $'alias ec2=\'awsume && ssh -i ~/.ssh/stationary ec2-user@$(aws ec2 describe-instances --instance-ids i-0caec4bd0b4fdf500 --query "Reservations[*].Instances[*].PublicIpAddress" --output text)\'' >> ~/.bashrc`. After restarting the shell, `ec2` should now drop you directly into the remote.
-
-### Setup VSCode
+#### Setup VSCode
 WARNING: 1GB RAM may be insufficient and crash the machine.
 
 Use the above to create an entry in `~/.ssh/config`
@@ -98,6 +96,7 @@ Host ec2
   User ec2-user
   IdentityFile ~\.ssh\stationary
 ```
+
 In case you're on WSL, you need to run the following in windows
 `echo C:\Windows\system32\wsl.exe ssh %* > %USERPROFILE%\.ssh\ssh.bat`
 And add the following to your `settings.json`
@@ -109,8 +108,26 @@ code --install-extension ms-vscode-remote.remote-ssh
 code --folder-uri vscode-remote://ssh-remote+ec2/home/ec2-user
 ```
 
-## AWS setup
-Install [docker in AWS](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-docker.html)
+#### Aliases
+We can add an alias `ec2` to our `.bashrc` using the following command: 
+```
+echo $'
+alias ec2=\'awsume && ssh -i ~/.ssh/stationary ec2-user@$(aws ec2 describe-instances --instance-ids i-0caec4bd0b4fdf500 --query "Reservations[*].Instances[*].PublicIpAddress" --output text) -t "tmux attach || tmux new"\'
+alias start-ec2="awsume && aws ec2 start-instances --instance-ids i-0caec4bd0b4fdf500"
+alias watch-ec2="awsume && watch aws ec2 describe-instances --query Reservations[0].Instances[0].State.Name"
+alias stop-ec2="awsume && aws ec2 stop-instances --instance-ids i-0caec4bd0b4fdf500"
+' >> ~/.bashrc
+```
+After restarting the shell, `ec2` should now drop you directly into the remote. Use `start-ec2` and `stop-ec2` to manipulate the instance.
+
+## EC2 setup
+Install tmux, git and UV:
+```
+sudo yum install -y tmux
+sudo yum install -y git
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+Install [docker in AWS](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-docker.html) and docker compose
 ```sh
 sudo yum update -y
 sudo yum install -y docker
@@ -118,5 +135,35 @@ sudo service docker start
 sudo usermod -a -G docker ec2-user
 ```
 Restart your SSH connection, and the following should work: `docker ps`
+```
+sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+docker-compose version
+```
+Install DevContainer: 
+```sh
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+source /home/ec2-user/.bashrc
+nvm install node
+npm install -g @devcontainers/cli
+```
+Launch Devcontainer
+- Delete previous container
+- Build
+- Launch
+- Connect
+```
+docker container rm --force $(docker container ps -q | grep ".*")  || \
+devcontainer build --workspace-folder . && \
+devcontainer up --workspace-folder . && \
+devcontainer exec --workspace-folder . tmux
+```
+We can use `watchfiles` to auto-trigger the above upon changing `.devcontainer/Devfile`
+```
+uvx watchfiles $'bash -c \'docker container rm --force $(docker container ps -q | grep ".*") || \
+devcontainer build --workspace-folder . && \
+devcontainer up --workspace-folder . && \
+devcontainer exec --workspace-folder . tmux\''
+```
 
 To be continued...
