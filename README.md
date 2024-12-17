@@ -165,5 +165,26 @@ devcontainer build --workspace-folder . && \
 devcontainer up --workspace-folder . && \
 devcontainer exec --workspace-folder . tmux\''
 ```
+Let's use `tmuxp` to auto-create a session for modifying the Devfile. Create the file `~/vps-app/.devcontainer/tmuxp.yaml
+```yaml
+session_name: Devcontainer
+windows:
+  - window_name: Devcontainer window
+    layout: main-vertical
+    shell_command_before:
+      - cd ~/vps-app
+    panes:
+      - uvx watchfiles $'
+          bash -c \'docker container rm --force $(docker container ps -q | grep ".*") ||
+          devcontainer build --workspace-folder . &&
+          devcontainer up --workspace-folder . &&
+          devcontainer exec --workspace-folder . tmux\'' .devcontainer
+      - cd .devcontainer && vim Devfile
+      - top
+```
+echo $'
+alias ec2-devcontainer=\'awsume && ssh -i ~/.ssh/stationary ec2-user@$(aws ec2 describe-instances --instance-ids i-0caec4bd0b4fdf500 --query "Reservations[*].Instances[*].PublicIpAddress" --output text) -t "uvx tmuxp load ~/vps-app/.devcontainer/tmuxp.yaml"\'
+' >> ~/.bashrc
+```
 
 To be continued...
