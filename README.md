@@ -53,6 +53,8 @@ Go and [create an ec2 instance](https://eu-north-1.console.aws.amazon.com/ec2/ho
 ## Local setup
 Goal: Be able to SSH into the EC2 instance.
 
+OPTIONAL: Neovim has many icons. [Install Nerdfont](https://github.com/ryanoasis/nerd-fonts?tab=readme-ov-file#tldr) to utilize them 
+
 ### Install UV
 `curl -LsSf https://astral.sh/uv/install.sh | sh`
 ### Install AWSCLI & Awsume
@@ -156,14 +158,14 @@ Launch Devcontainer
 docker container rm --force $(docker container ps -q | grep ".*")  || \
 devcontainer build --workspace-folder . && \
 devcontainer up --workspace-folder . && \
-devcontainer exec --workspace-folder . tmux
+devcontainer exec --workspace-folder . tmux -u
 ```
 We can use `watchfiles` to auto-trigger the above upon changing `.devcontainer/Devfile`
 ```
 uvx watchfiles $'bash -c \'docker container rm --force $(docker container ps -q | grep ".*") || \
 devcontainer build --workspace-folder . && \
 devcontainer up --workspace-folder . && \
-devcontainer exec --workspace-folder . tmux\''
+devcontainer exec --workspace-folder . tmux -u\''
 ```
 Let's use `tmuxp` to auto-create a session for modifying the Devfile. Create the file `~/vps-app/.devcontainer/tmuxp.yaml
 ```yaml
@@ -178,9 +180,11 @@ windows:
           bash -c \'docker container rm --force $(docker container ps -q | grep ".*") ||
           devcontainer build --workspace-folder . &&
           devcontainer up --workspace-folder . &&
-          devcontainer exec --workspace-folder . tmux\'' .devcontainer
+          devcontainer exec --workspace-folder . tmux -u\'' .devcontainer
       - cd .devcontainer && vim Devfile
       - top
+```
+And create an alias for running this config
 ```
 echo $'
 alias ec2-devcontainer=\'awsume && ssh -i ~/.ssh/stationary ec2-user@$(aws ec2 describe-instances --instance-ids i-0caec4bd0b4fdf500 --query "Reservations[*].Instances[*].PublicIpAddress" --output text) -t "uvx tmuxp load ~/vps-app/.devcontainer/tmuxp.yaml"\'
